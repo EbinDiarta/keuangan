@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOGIN</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="kotak">
+        <h2>LOGIN</h2>
+        <form onsubmit="return login()">
+            <label for="loginUsername">Nama Pengguna</label>
+            <input type="text"  id="loginUsername" placeholder="username" required>
+            <label for="loginPassword">Kata Sandi</label>
+            <input type="password" id="loginPassword" placeholder="password" required>
+            <button type="submit">LOGIN</button>
+        </form>
+    <p>Aplikasi Ini Dibuat Oleh : </p>
+    <p><b>Ebin Diarta Pratama</b></p>
+    <p>Untuk mengelola pemasukan dan pengeluaran anda</p>
+    </div>
+    <script>
+        function login() {
+            const username = document.getElementById("loginUsername").value;
+            const password = document.getElementById("loginPassword").value;
+
+            const savedUsername = localStorage.getItem("username");
+            const savedPassword = localStorage.getItem("password");
+
+            if (username === 'EbinDiarta' && password === 'Keuangan'){
+                alert("login berhasil!")
+                window.location.href = "Keuangan.html";
+            } else {
+            alert ("kesalahan dalam penulisan username atau password periksa kembali dengan benar!. Username dan password hanya diketahui pemilik!");
+            }
+            return false;
+        }
+    </script>
+</body>
+</html>

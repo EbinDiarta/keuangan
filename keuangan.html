@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Keuangan Pribadi</title>
+    <style>
+        :root {
+            --primary: #3a86ff;
+            --income: #2ecc71;
+            --expense: #e74c3c;
+            --balance: #34495e;
+            --background: #f8f9fa;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--balance);
+        }
+
+        .card.total {
+            color: var(--balance);
+        }
+
+        .card.income {
+            color: var(--income);
+        }
+
+        .card.expense {
+            color: var(--expense);
+        }
+
+        .amount {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .form-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2568c8;
+        }
+
+        .btn-income {
+            background-color: var(--income);
+        }
+
+        .btn-income:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-expense {
+            background-color: var(--expense);
+        }
+
+        .btn-expense:hover {
+            background-color: #c0392b;
+        }
+
+        .transactions {
+            margin-top: 30px;
+        }
+
+        .transaction-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            table-layout: fixed;
+            font-size: clamp(0.75rem, 1vw + 0.2rem, 1rem);
+        }
+
+        .transaction-table th, 
+        .transaction-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .transaction-table th {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .transaction-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .income-row td:last-child {
+            color: var(--income);
+            font-weight: bold;
+        }
+
+        .expense-row td:last-child {
+            color: var(--expense);
+            font-weight: bold;
+        }
+
+        .category-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .delete-btn {
+            background-color: transparent;
+            color: #e74c3c;
+            padding: 5px;
+            font-size: 14px;
+        }
+
+        .delete-btn:hover {
+            color: #c0392b;
+            text-decoration: underline;
+        }
+
+        .no-transactions {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dashboard Keuangan Ebin</h1>
+
+            <p>Kelola pemasukan dan pengeluaran Anda dengan mudah</p>
+        </header>
+
+        <section class="dashboard">
+            <div class="card total">
+                <h2>Saldo Saat Ini</h2>
+                <div class="amount" id="current-balance">Rp0</div>
+            </div>
+            <div class="card income">
+                <h2>Total Pemasukan</h2>
+                <div class="amount" id="total-income">Rp0</div>
+            </div>
+            <div class="card expense">
+                <h2>Total Pengeluaran</h2>
+                <div class="amount" id="total-expense">Rp0</div>
+            </div>
+        </section>
+
+        <section class="form-container">
+            <div class="card">
+                <h2>Tambah Pemasukan</h2>
+                <form id="income-form">
+                    <div class="form-group">
+                        <label for="income-amount">Jumlah</label>
+                        <input type="number" id="income-amount" placeholder="Rp" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="income-category">Kategori</label>
+                        <select id="income-category" required>
+                            <option value="">Pilih kategori</option>
+                            <option value="uang saku">Uang Saku</option>
+                            <option value="bonus">Bonus</option>
+                            <option value="upah">Upah</option>
+                            <option value="hibah">Hibah</option>
+                            <option value="lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="income-date">Tanggal</label>
+                        <input type="date" id="income-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="income-description">Deskripsi</label>
+                        <input type="text" id="income-description" placeholder="Tambahkan deskripsi">
+                    </div>
+                    <button type="submit" class="btn-income">Tambahkan Pemasukan</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Tambah Pengeluaran</h2>
+                <form id="expense-form">
+                    <div class="form-group">
+                        <label for="expense-amount">Jumlah</label>
+                        <input type="number" id="expense-amount" placeholder="Rp" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-category">Kategori</label>
+                        <select id="expense-category" required>
+                            <option value="">Pilih kategori</option>
+                            <option value="makanan">Makanan</option>
+                            <option value="transportasi">Transportasi</option>
+                            <option value="belanja">Belanja</option>
+                            <option value="jajan">Jajan</option>
+                            <option value="kesehatan">Kesehatan</option>
+                            <option value="pendidikan">Pendidikan</option>
+                            <option value="tagihan">Tagihan</option>
+                            <option value="lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-date">Tanggal</label>
+                        <input type="date" id="expense-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-description">Deskripsi</label>
+                        <input type="text" id="expense-description" placeholder="Tambahkan deskripsi">
+                    </div>
+                    <button type="submit" class="btn-expense">Tambahkan Pengeluaran</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="transactions card">
+            <h2>Riwayat Transaksi</h2>
+            <div id="transactions-list">
+                <p class="no-transactions">Belum ada transaksi</p>
+            </div>
+            <button onclick="downloadCSV(transactions)">Unduh CSV</button>
+            <button onclick="downloadXLSX(transactions)">Unduh Excel</button>
+        </section>
+    </div>
+</br>
+    <button onclick="kembali()">Kembali</button>
+</body>
+    <script>
+        // Data transaksi
+        let transactions = [];
+        
+        // DOM Elements
+        const incomeForm = document.getElementById('income-form');
+        const expenseForm = document.getElementById('expense-form');
+        const currentBalanceEl = document.getElementById('current-balance');
+        const totalIncomeEl = document.getElementById('total-income');
+        const totalExpenseEl = document.getElementById('total-expense');
+        const transactionsListEl = document.getElementById('transactions-list');
+        
+        // Format mata uang
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(amount);
+        };
+        
+        // Update informasi saldo
+        const updateBalanceInfo = () => {
+            const income = transactions
+                .filter(t => t.type === 'income')
+                .reduce((total, t) => total + t.amount, 0);
+            
+            const expense = transactions
+                .filter(t => t.type === 'expense')
+                .reduce((total, t) => total + t.amount, 0);
+            
+            const balance = income - expense;
+            
+            totalIncomeEl.textContent = formatCurrency(income);
+            totalExpenseEl.textContent = formatCurrency(expense);
+            currentBalanceEl.textContent = formatCurrency(balance);
+            
+            // Update warna berdasarkan saldo
+            if (balance > 0) {
+                currentBalanceEl.style.color = 'var(--income)';
+            } else if (balance < 0) {
+                currentBalanceEl.style.color = 'var(--expense)';
+            } else {
+                currentBalanceEl.style.color = 'var(--balance)';
+            }
+        };
+        
+        // Render daftar transaksi
+        const renderTransactions = () => {
+            if (transactions.length === 0) {
+                transactionsListEl.innerHTML = '<p class="no-transactions">Belum ada transaksi</p>';
+                return;
+            }
+            
+            // Sort berdasarkan tanggal terbaru
+            const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            let html = `
+                <table class="transaction-table">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Deskripsi</th>
+                            <th>Kategori</th>
+                            <th>Jumlah</th>
+                            <th>Tipe</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            sortedTransactions.forEach((transaction, index) => {
+                const date = new Date(transaction.date).toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+                
+                const categoryIcons = {
+                    'uang saku': '💳',
+                    'bonus': '🎉',
+                    'upah': '💸',
+                    'hibah': '🎁',
+                    'makanan': '🍱',
+                    'transportasi': '🚕',
+                    'belanja': '🛍️',
+                    'jajan': '🍭',
+                    'kesehatan': '💊',
+                    'pendidikan': '📚',
+                    'tagihan': '📋',
+                    'lainnya': '📌'
+                };
+                
+                const icon = categoryIcons[transaction.category] || '📌';
+                
+                html += `
+                    <tr class="${transaction.type}-row">
+                        <td>${date}</td>
+                        <td>${transaction.description || '-'}</td>
+                        <td><span class="category-icon">${icon}</span>${transaction.category}</td>
+                        <td>${formatCurrency(transaction.amount)}</td>
+                        <td style="font-weight:bold; color:${transaction.type === 'income' ? 'green' : 'red'};">
+            ${transaction.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}
+        </td>
+                        <td><button class="delete-btn" data-index="${index}">Hapus</button></td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            transactionsListEl.innerHTML = html;
+            
+            // Tambahkan event listener untuk tombol hapus
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    deleteTransaction(index);
+                });
+            });
+        };
+        
+        // Hapus transaksi
+        const deleteTransaction = (index) => {
+            if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
+                transactions.splice(index, 1);
+                saveTransactions();
+                updateBalanceInfo();
+                renderTransactions();
+            }
+        };
+        
+        // Simpan transaksi ke localStorage
+        const saveTransactions = () => {
+            localStorage.setItem('finance-transactions', JSON.stringify(transactions));
+        };
+        
+        // Load transaksi dari localStorage
+        const loadTransactions = () => {
+            const savedTransactions = localStorage.getItem('finance-transactions');
+            if (savedTransactions) {
+                transactions = JSON.parse(savedTransactions);
+            }
+        };
+        
+        // Event listener untuk form pemasukan
+        incomeForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const amount = parseFloat(document.getElementById('income-amount').value);
+            const category = document.getElementById('income-category').value;
+            const date = document.getElementById('income-date').value;
+            const description = document.getElementById('income-description').value;
+            
+            const transaction = {
+                type: 'income',
+                amount,
+                category,
+                date,
+                description
+            };
+            
+            transactions.push(transaction);
+            saveTransactions();
+            updateBalanceInfo();
+            renderTransactions();
+            
+            // Reset form
+            incomeForm.reset();
+            document.getElementById('income-date').value = new Date().toISOString().split('T')[0];
+        });
+        
+        // Event listener untuk form pengeluaran
+        expenseForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            const category = document.getElementById('expense-category').value;
+            const date = document.getElementById('expense-date').value;
+            const description = document.getElementById('expense-description').value;
+            
+            const transaction = {
+                type: 'expense',
+                amount,
+                category,
+                date,
+                description
+            };
+            
+            transactions.push(transaction);
+            saveTransactions();
+            updateBalanceInfo();
+            renderTransactions();
+            
+            // Reset form
+            expenseForm.reset();
+            document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+        });
+        
+        // Inisialisasi
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set tanggal default ke hari ini
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('income-date').value = today;
+            document.getElementById('expense-date').value = today;
+            
+            // Load transaksi yang tersimpan
+            loadTransactions();
+            updateBalanceInfo();
+            renderTransactions();
+        });
+
+        function kembali() {
+            window.location.href = "index.html";
+        }
+    </script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="uang.js"></script>
+</html>
